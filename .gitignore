@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+*.dll
+*.dylib
+
+# Virtual environment
+venv/
+.env/
+*.venv
+Pipfile.lock
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Logs and debugging
+*.log
+logs/
+debug.log
+
+# Hidden system files
+.DS_Store
+Thumbs.db
+
+# IDE and Editor Files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+
+# Data files
+*.csv
+*.json
+*.db
+*.sqlite3
+*.h5
+*.npy
+
+# PyTorch and TensorFlow models
+*.pt
+*.pth
+*.ckpt
+
+# Credentials and sensitive files
+.env
+secrets.json
+config.yaml
