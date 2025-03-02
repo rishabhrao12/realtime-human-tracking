@@ -41,6 +41,7 @@ dist/
 *.sqlite3
 *.h5
 *.npy
+*.mp4
 
 # PyTorch and TensorFlow models
 *.pt
