@@ -24,7 +24,7 @@ args = TrackerArgs()
 tracker = BYTETracker(args)
 
 # Load the video
-video_path = "trial2.mp4"
+video_path = "Video/trial2.mp4"
 cap = cv2.VideoCapture(video_path)
 
 # Get video properties
