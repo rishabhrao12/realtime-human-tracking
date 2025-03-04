@@ -3,15 +3,15 @@ import numpy as np
 from ultralytics import YOLO
 
 # Initialize YOLO model
-model = YOLO("yolov8n.pt")  # Use "yolov8s.pt" for better accuracy
+model = YOLO("yolov8n.pt")
 
 # Motion detection parameters
-MOTION_THRESHOLD = 2.0  # Optical Flow magnitude threshold
+MOTION_THRESHOLD = 2.0  # Value for decent stability
 
 # Start Webcam Feed
 cap = cv2.VideoCapture(0)  # 0 = Default Webcam
 
-# Set resolution (Optional)
+# Set resolution if input is of poor quality
 cap.set(3, 1280)  # Width
 cap.set(4, 720)   # Height
 
@@ -28,42 +28,46 @@ while cap.isOpened():
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
     # Compute Optical Flow (Farneback method)
+    # pyramid scale(lower for details), levels: large gives large movement, window_size: improves against noise(larger), iterations per pixel (higher is better), 
+    # polynomial terms (motion within neighborhood, 5: ast/rough, 7 slow/smooth), 
+    # smooth before flow, dense flow
     flow = cv2.calcOpticalFlowFarneback(prev_gray, gray, None, 0.5, 3, 15, 3, 5, 1.2, 0)
 
-    # Compute magnitude of flow vectors
+    # Magnitude of flow vector to get how much pixel moves
     magnitude, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
 
     # Update previous frame
     prev_gray = gray.copy()
 
-    # Run YOLO detection
+    # Get detected objects within the frame
     results = model(frame)
-    moving_objects = []  # Store only moving detections
+    moving_objects = []
 
     for result in results:
         boxes = result.boxes
         for box in boxes:
-            if int(box.cls) == 0:  # Filter only "person" class (COCO ID = 0)
+            # Only detected people are relevant
+            if int(box.cls) == 0:
                 x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-                # Compute motion within the bounding box
+                # Motion of object from optical flow matrix
                 motion_region = magnitude[y1:y2, x1:x2]
                 motion_score = np.mean(motion_region)
 
-                # Keep only moving objects
+                # For object motion beyond threshold
                 if motion_score > MOTION_THRESHOLD:
                     moving_objects.append((x1, y1, x2, y2))
 
-    # Draw bounding boxes only for moving objects
+    # Bounding box for moving object
     for (x1, y1, x2, y2) in moving_objects:
         cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)  # Green box
-        cv2.putText(frame, "Moving", (x1, y1 - 10),
+        cv2.putText(frame, "Moving Person", (x1, y1 - 10),
                     cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
     # Display output frame
-    cv2.imshow("Live YOLO + Optical Flow Motion Filtering", frame)
+    cv2.imshow("Realtime YOLO + Optical Flow Motion Filtering", frame)
 
-    # Small delay to reduce CPU usage (adjust if needed)
+    # wait / quit
     if cv2.waitKey(10) & 0xFF == ord('q'):  
         break
 
